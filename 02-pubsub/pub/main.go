@@ -18,14 +18,25 @@ func main() {
 
 	//  Prepare our publisher
 	publisher, _ := zmq.NewSocket(zmq.PUB)
-	defer publisher.Close()
-	publisher.Bind("tcp://*:5556")
-	publisher.Bind("ipc://weather.ipc")
+	defer func(publisher *zmq.Socket) {
+		err := publisher.Close()
+		if err != nil {
+			fmt.Println("Error closing zmq socket")
+		}
+	}(publisher)
+	err := publisher.Bind("tcp://*:5556")
+	if err != nil {
+		fmt.Println("Error binding zmq socket")
+	}
+	err = publisher.Bind("ipc://weather.ipc")
+	if err != nil {
+		fmt.Println("Error binding zmq socket")
+	}
 
 	//  Initialize random number generator
 	rand.Seed(time.Now().UnixNano())
 
-	// loop for a while aparently
+	// loop for a while apparently
 	for {
 
 		//  Get values that will fool the boss

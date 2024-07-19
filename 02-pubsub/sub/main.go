@@ -19,15 +19,26 @@ func main() {
 	//  Socket to talk to server
 	fmt.Println("Collecting updates from weather server...")
 	subscriber, _ := zmq.NewSocket(zmq.SUB)
-	defer subscriber.Close()
-	subscriber.Connect("tcp://localhost:5556")
+	defer func(subscriber *zmq.Socket) {
+		err := subscriber.Close()
+		if err != nil {
+			fmt.Println("Error closing subscriber socket:", err)
+		}
+	}(subscriber)
+	err := subscriber.Connect("tcp://localhost:5556")
+	if err != nil {
+		fmt.Println("Error connecting to server:", err)
+	}
 
 	//  Subscribe to zipcode, default is NYC, 10001
 	filter := "10001 "
 	if len(os.Args) > 1 {
 		filter = os.Args[1] + " "
 	}
-	subscriber.SetSubscribe(filter)
+	err = subscriber.SetSubscribe(filter)
+	if err != nil {
+		fmt.Println("Error subscribing:", err)
+	}
 
 	//  Process 100 updates
 	total_temp := 0
